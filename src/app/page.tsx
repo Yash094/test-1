@@ -1,20 +1,14 @@
 "use client";
 import { client } from "./client";
-import { estimateGas, getContract, Hex, prepareContractCall } from "thirdweb";
-import { defineChain } from "thirdweb/chains";
+import { baseSepolia, defineChain, sepolia } from "thirdweb/chains";
 import {
   ConnectButton,
-  TransactionButton,
-  useActiveAccount,
+  PayEmbed,
 } from "thirdweb/react";
+import { getDefaultToken } from "thirdweb/react";
 
 export default function Home() {
-  const account = useActiveAccount()
-  const contract = getContract({
-    chain: defineChain(50311),
-    client,
-    address: "0xa8ede32e4735F8E5147a3491a87379CfB0591c44"
-  })
+ 
 
 
   return (
@@ -25,45 +19,28 @@ export default function Home() {
         <ConnectButton
           client={client}
           chain={defineChain(50311)}
-          accountAbstraction={{
-            chain: defineChain(50311),
-            gasless: true
-          }}
         />
-        <TransactionButton
-          transaction={async () => {
-            let estimateTx = prepareContractCall({
-              contract,
-              method: "function registerUser(string username, address wallet)",
-              params: ["test", account?.address as Hex]
-            });
-            const estimatedGas = await estimateGas({
-              transaction: estimateTx,
-              from: account?.address,
-            });
-            const neededGas = estimatedGas * 2n;
-            let txFinal = prepareContractCall({
-              contract,
-              method: "function registerUser(string username, address wallet)",
-              params: ["test", account?.address as Hex],
-              extraGas: neededGas
-            });
-            return txFinal
-
-          }}
-          onTransactionSent={(result) => {
-            console.log("Transaction submitted", result.transactionHash);
-          }}
-          onTransactionConfirmed={(receipt) => {
-            console.log("Transaction confirmed", receipt.transactionHash);
-          }}
-          onError={(error) => {
-            console.error("Transaction error", error);
-          }}
-        >
-          Confirm Transaction
-        </TransactionButton>
-
+      
+      <PayEmbed
+    client={client}
+    theme="dark"
+    payOptions={{
+        mode: "direct_payment",
+        paymentInfo: {
+            amount: "0.0001",
+            chain: sepolia,
+            // @ts-ignore: temporary for testing
+            token: getDefaultToken(sepolia, "ETH"),
+            sellerAddress: "0xEF87c05700668863519b19906a57068e4044534C",
+        },
+        metadata: {
+           
+        },
+        purchaseData: {
+           
+        },
+    }}
+/>
       </div>
     </main>
   );
